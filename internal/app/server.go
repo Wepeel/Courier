@@ -27,9 +27,14 @@ func Start() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
 	server := grpc.NewServer()
 	pb.RegisterDoctorServiceServer(server, &Server{})
 	if err := server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+
+	// TODO: Push request to RabbiqMQ to doctor
+	// TODO: doctor Response goes from doctor to hospital
+	// TODO: hospital Response goes to server
 }
