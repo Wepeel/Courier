@@ -7,7 +7,6 @@ import (
 	"net"
 
 	pb "github.com/Wepeel/Courier/internal/app/protos"
-	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
@@ -18,6 +17,11 @@ const (
 
 type Server struct {
 	pb.UnimplementedDoctorServiceServer
+	doctorConn *DoctorConn
+}
+
+func (this *Server) Close() {
+	this.doctorConn.Close()
 }
 
 func randomString(l int) string {
@@ -35,61 +39,16 @@ func randInt(min int, max int) int {
 func (s *Server) GetDisease(ctx context.Context, in *pb.GetDiseaseRequest) (*pb.GetDiseaseResponse, error) {
 	log.Printf("Received %v", in)
 
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
-	}
-	defer conn.Close()
-
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Failed to open a channel: %v", err)
-		return nil, err
-	}
-	defer ch.Close()
-
-	callback, err := ch.QueueDeclare(
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Failed to create a queue with name %s: %v", callback.Name, err)
-		return nil, err
-	}
-
-	responses, err := ch.Consume(
-		callback.Name,
-		"",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-
 	corrId := randomString(32)
 	in_bytes, err := proto.Marshal(in)
 	if err != nil {
 		log.Fatalf("Failed to marshal 'in': %v", err)
 		return nil, err
 	}
-	ch.Publish(
-		"",
-		"rpc_queue",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType:   "text/plain",
-			CorrelationId: corrId,
-			ReplyTo:       callback.Name,
-			Body:          in_bytes,
-		})
 
-	for response := range responses {
+	s.doctorConn.SendMsgToDoctorConn(in_bytes, corrId)
+
+	for response := range s.doctorConn.responses {
 		if corrId == response.CorrelationId {
 			var msg pb.GetDiseaseResponse
 			err = proto.Unmarshal(response.Body, &msg)
@@ -103,6 +62,17 @@ func (s *Server) GetDisease(ctx context.Context, in *pb.GetDiseaseRequest) (*pb.
 	return &pb.GetDiseaseResponse{}, nil
 }
 
+func NewServer() *Server {
+	var ret *Server
+	var err error
+	ret.doctorConn, err = NewDoctorConn()
+	if err != nil {
+		log.Fatalf("Error creating server: %v", err)
+		return nil
+	}
+	return ret
+}
+
 func Start() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -110,7 +80,9 @@ func Start() {
 	}
 
 	server := grpc.NewServer()
-	pb.RegisterDoctorServiceServer(server, &Server{})
+	serv := NewServer()
+	defer serv.Close()
+	pb.RegisterDoctorServiceServer(server, serv)
 	if err := server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
