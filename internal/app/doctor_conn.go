@@ -1,10 +1,13 @@
 package app
 
 import (
+	"errors"
 	"log"
 
+	pb "github.com/Wepeel/Courier/internal/app/protos"
 	"github.com/Wepeel/Courier/internal/common"
 	"github.com/streadway/amqp"
+	"google.golang.org/protobuf/proto"
 )
 
 type DoctorConn struct {
@@ -59,4 +62,20 @@ func (this *DoctorConn) SendMsgToDoctorConn(msg []byte, corrId string) {
 			ReplyTo:       this.callbackQueue,
 			Body:          msg,
 		})
+}
+
+func (this *DoctorConn) HandleResponses(corrId string) (*pb.GetDiseaseResponse, error) {
+	for response := range this.responses {
+		if corrId == response.CorrelationId {
+			var msg pb.GetDiseaseResponse
+			err := proto.Unmarshal(response.Body, &msg)
+			if err != nil {
+				log.Fatalf("Failed to unmarshal 'response': %v", err)
+				return nil, err
+			}
+			return &msg, nil
+		}
+	}
+
+	return nil, errors.New("No reponse found")
 }
