@@ -19,7 +19,7 @@ type DoctorConn struct {
 func NewDoctorConn() (*DoctorConn, error) {
 	var doctorConn DoctorConn
 	var err error
-	doctorConn.rabbitConn, err = common.NewRabbitConn("amqp://guest:guest@localhost:5672/")
+	doctorConn.rabbitConn, err = common.NewRabbitConn("amqp://guest:guest@rabbitmq:5672/")
 	callback, err := doctorConn.rabbitConn.QueueDeclare(
 		"",
 		false,
