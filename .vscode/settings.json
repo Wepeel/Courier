@@ -6,5 +6,6 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/*.exe": true
+        "bin/": true
     }
 }
