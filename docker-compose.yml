@@ -1,7 +1,6 @@
 version: "3"
 services: 
   casey:
-    container_name: 'casey'
     build: 
       dockerfile: ./build/docker/Casey/Dockerfile
       context: .
@@ -17,15 +16,13 @@ services:
     ports:
     - "5672:5672"
     - "15672:15672"
-    logging:
-      driver: none
     networks:
       - general
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:15672"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
 networks:
   general:
     driver: bridge

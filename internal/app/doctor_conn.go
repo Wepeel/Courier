@@ -20,6 +20,7 @@ func NewDoctorConn() (*DoctorConn, error) {
 	var doctorConn DoctorConn
 	var err error
 	doctorConn.rabbitConn, err = common.NewRabbitConn("amqp://guest:guest@rabbitmq:5672/")
+	log.Print("Successfully set up rabbitmq connection")
 	callback, err := doctorConn.rabbitConn.QueueDeclare(
 		"",
 		false,
@@ -28,11 +29,11 @@ func NewDoctorConn() (*DoctorConn, error) {
 		false,
 		nil,
 	)
-	doctorConn.callbackQueue = callback.Name
 	if err != nil {
 		log.Fatalf("Failed to create a queue with name %s: %v", callback.Name, err)
 		return nil, err
 	}
+	doctorConn.callbackQueue = callback.Name
 
 	doctorConn.responses, err = doctorConn.rabbitConn.Consume(
 		callback.Name,
@@ -43,10 +44,17 @@ func NewDoctorConn() (*DoctorConn, error) {
 		false,
 		nil,
 	)
-	return &doctorConn, err
+	if err != nil {
+		log.Fatalf("Error creating consumer: %v", err)
+		return nil, err
+	}
+
+	log.Printf("NewServer: doctorconn returning %v, %v", doctorConn, err)
+	return &doctorConn, nil
 }
 
 func (this *DoctorConn) Close() {
+	log.Printf("DoctorConn Close: this - %v", this)
 	this.rabbitConn.Close()
 }
 

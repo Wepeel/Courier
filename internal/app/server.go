@@ -21,6 +21,7 @@ type Server struct {
 }
 
 func (this *Server) Close() {
+	log.Printf("Server Close: this - %v", this)
 	this.doctorConn.Close()
 }
 
@@ -51,14 +52,16 @@ func (s *Server) GetDisease(ctx context.Context, in *pb.GetDiseaseRequest) (*pb.
 }
 
 func NewServer() *Server {
-	var ret *Server
+	var ret Server
 	var err error
+	log.Printf("NewServer: waiting for doctorconn return %v", ret)
 	ret.doctorConn, err = NewDoctorConn()
+	log.Printf("NewServer: doctorconn returned %v", ret.doctorConn)
 	if err != nil {
 		log.Fatalf("Error creating server: %v", err)
 		return nil
 	}
-	return ret
+	return &ret
 }
 
 func Start() {
