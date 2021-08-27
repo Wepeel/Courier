@@ -49,7 +49,6 @@ func NewDoctorConn() (*DoctorConn, error) {
 		return nil, err
 	}
 
-	log.Printf("NewServer: doctorconn returning %v, %v", doctorConn, err)
 	return &doctorConn, nil
 }
 

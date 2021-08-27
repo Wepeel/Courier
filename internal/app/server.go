@@ -54,9 +54,7 @@ func (s *Server) GetDisease(ctx context.Context, in *pb.GetDiseaseRequest) (*pb.
 func NewServer() *Server {
 	var ret Server
 	var err error
-	log.Printf("NewServer: waiting for doctorconn return %v", ret)
 	ret.doctorConn, err = NewDoctorConn()
-	log.Printf("NewServer: doctorconn returned %v", ret.doctorConn)
 	if err != nil {
 		log.Fatalf("Error creating server: %v", err)
 		return nil
@@ -81,5 +79,4 @@ func Start() {
 	// TODO: Push request to RabbiqMQ to doctor
 	// TODO: doctor Response goes from doctor to hospital
 	// TODO: hospital Response goes to courier
-
 }
