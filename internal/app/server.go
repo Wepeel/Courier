@@ -75,6 +75,7 @@ func Start() {
 	if err := server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+	log.Print("Finished running");
 
 	// TODO: Push request to RabbiqMQ to doctor
 	// TODO: doctor Response goes from doctor to hospital
