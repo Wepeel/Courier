@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package grpc;
+option go_package = "github.com/Wepeel/Courier/internal/app/protos";
+
+service HospitalService {
+    rpc GetHospital (GetHospitalRequest) returns (GetHospitalResponse) {}
+
+}
+
+message GetHospitalRequest {
+    
+}
+
+message GetHospitalResponse {
+    
+}

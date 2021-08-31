@@ -1,0 +1,30 @@
+version: "3"
+services: 
+  casey:
+    build: 
+      dockerfile: ./build/docker/Casey/Dockerfile
+      context: .
+    networks:
+      - general
+    ports:
+      - '50051:50051'
+    depends_on:
+      - 'rabbitmq'
+    restart: 'on-failure'
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    container_name: 'rabbitmq'
+    hostname: 'rabbitmq'
+    ports:
+    - "5672:5672"
+    - "15672:15672"
+    networks:
+      - general
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+networks:
+  general:
+    driver: bridge

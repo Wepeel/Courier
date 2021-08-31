@@ -24,6 +24,7 @@ func NewRabbitConn(uri string) (*RabbitConn, error) {
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
+	log.Printf("Created connection on %s", uri)
 
 	rabbitConn.ch, err = rabbitConn.conn.Channel()
 	if err != nil {

@@ -21,6 +21,7 @@ type Server struct {
 }
 
 func (this *Server) Close() {
+	log.Printf("Server Close: this - %v", this)
 	this.doctorConn.Close()
 }
 
@@ -51,14 +52,14 @@ func (s *Server) GetDisease(ctx context.Context, in *pb.GetDiseaseRequest) (*pb.
 }
 
 func NewServer() *Server {
-	var ret *Server
+	var ret Server
 	var err error
 	ret.doctorConn, err = NewDoctorConn()
 	if err != nil {
 		log.Fatalf("Error creating server: %v", err)
 		return nil
 	}
-	return ret
+	return &ret
 }
 
 func Start() {
@@ -74,9 +75,9 @@ func Start() {
 	if err := server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+	log.Print("Finished running");
 
 	// TODO: Push request to RabbiqMQ to doctor
 	// TODO: doctor Response goes from doctor to hospital
 	// TODO: hospital Response goes to courier
-
 }
