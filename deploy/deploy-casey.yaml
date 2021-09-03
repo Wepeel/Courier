@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: casey
+spec:
+  selector:
+    app: casey
+  ports:
+    - port: 50051
+      targetPort: 50051
+      nodePort: 30231
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: casey
+spec:
+  selector:
+    matchLabels:
+      app: casey
+  template:
+    metadata:
+      labels:
+        app: casey
+    spec:
+      containers:
+        - name: casey
+          image: casey
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50051
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
