@@ -8,7 +8,6 @@ spec:
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 80
   type: LoadBalancer
 ---
 apiVersion: apps/v1
@@ -26,10 +25,11 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: courier-frontend
+          image: frontend
           resources:
             limits:
               memory: "128Mi"
               cpu: "500m"
           ports:
             - containerPort: 80
+          imagePullPolicy: IfNotPresent

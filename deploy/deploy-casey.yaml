@@ -8,7 +8,6 @@ spec:
   ports:
     - port: 50051
       targetPort: 50051
-      nodePort: 30231
   type: NodePort
 ---
 apiVersion: apps/v1
